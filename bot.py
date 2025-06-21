@@ -244,19 +244,7 @@ async def main():
     app.add_handler(MessageHandler((filters.Document.ALL | filters.VIDEO) & filters.ChatType.PRIVATE, handle_file))
     app.add_handler(MessageHandler((filters.Document.ALL | filters.VIDEO) & filters.ChatType.PRIVATE, handle_part))
 
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
-
-    try:
-        await asyncio.Event().wait()
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    finally:
-        await on_shutdown(app)
-        await app.updater.stop()
-        await app.stop()
-        await app.shutdown()
+    await app.run_polling(shutdown_callback=on_shutdown)
 
 if __name__ == '__main__':
     asyncio.run(main())
