@@ -35,7 +35,7 @@ load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 BOT_USERNAME = os.getenv("BOT_USERNAME", "").strip()
-ADMINS = [int(u) for u in os.getenv("ADMINS", "").split(",") if u.strip()]
+# ADMINS ro'yxati olib tashlandi
 
 # === Obuna tekshirish funksiyasi ===
 async def is_subscribed(user_id, context):
@@ -51,8 +51,6 @@ async def is_subscribed(user_id, context):
 
 # === Kanal boshqaruvi ===
 async def add_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.from_user.id not in ADMINS:
-        return await update.message.reply_text("❌ Sizda huquq yo'q.")
     if not context.args:
         return await update.message.reply_text("Foydalanish: /addchannel @kanal")
     
@@ -79,8 +77,6 @@ async def add_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Xato: {str(e)}")
 
 async def remove_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.from_user.id not in ADMINS:
-        return await update.message.reply_text("❌ Sizda huquq yo'q.")
     if not context.args:
         return await update.message.reply_text("Foydalanish: /removechannel @kanal")
     
@@ -95,8 +91,6 @@ async def remove_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"✅ {channel} o'chirildi.")
 
 async def list_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.from_user.id not in ADMINS:
-        return await update.message.reply_text("❌ Sizda huquq yo'q.")
     if not CHANNEL_IDS:
         return await update.message.reply_text("❌ Kanal yo'q.")
     await update.message.reply_text("📢 Kanallar ro'yxati:\n" + "\n".join(CHANNEL_IDS))
@@ -278,11 +272,7 @@ async def handle_media_upload(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:
         data["manhwa"][mid]["title"] = name
 
-    # Qism nomi so‘rash (oddiy variant uchun hozircha kiritilmagan)
-    # Siz o'zingiz qism nomi olish uchun inline klaviatura yoki boshqa usul qo'shishingiz mumkin.
-
-    # Foydalanuvchi uchun qismlar ro'yxatini yaratish
-    part_name = "1"  # standart, keyinchalik sozlash mumkin
+    part_name = "1"
     data["manhwa"][mid]["parts"][part_name] = file_id
     save_json("data.json", data)
     await update.message.reply_text(f"✅ {name} uchun fayl qabul qilindi.")
@@ -313,7 +303,6 @@ async def part_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Fayl formati noto‘g‘ri.")
         return
 
-    # Qism nomini oddiy raqam qilib olamiz (masalan, ketma-ket raqam)
     part_num = len(data[cat][mid]["parts"]) + 1
     part_name = str(part_num)
     data[cat][mid]["parts"][part_name] = file_id
@@ -322,7 +311,6 @@ async def part_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # === /publish komandasi (placeholder) ===
 async def publish(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Bu yerda kerakli narsa yozilishi mumkin
     await update.message.reply_text("🛠️ Bu funksiya hali ishlab chiqilmoqda.")
 
 # === Main funksiyasi ===
@@ -353,4 +341,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
