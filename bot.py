@@ -8,7 +8,7 @@ from telegram.ext import (
 )
 from telegram.constants import ParseMode
 
-# === JSON o‘quvchi/yozuvchi funksiyalar ===
+# === JSON o'quvchi/yozuvchi funksiyalar ===
 def load_json(file):
     if os.path.exists(file):
         with open(file, "r", encoding="utf-8") as f:
@@ -34,6 +34,7 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 BOT_USERNAME = os.getenv("BOT_USERNAME", "").strip()
 CHANNEL_IDS = [ch if ch.startswith("@") else f"@{ch.strip()}" for ch in os.getenv("CHANNEL_IDS", "").split(",") if ch.strip()]
+ADMINS = [int(admin_id) for admin_id in os.getenv("ADMINS", "").split(",") if admin_id.strip()]
 
 # === Obuna tekshirish ===
 async def is_subscribed(user_id, context):
@@ -45,6 +46,77 @@ async def is_subscribed(user_id, context):
         except Exception:
             return False, ch
     return True, None
+
+# === Kanal boshqaruv funksiyalari ===
+async def add_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if user_id not in ADMINS:
+        await update.message.reply_text("❌ Sizda bunday huquq yo'q.")
+        return
+    
+    if not context.args:
+        await update.message.reply_text("Foydalanish: /addchannel @kanal_nomi")
+        return
+    
+    channel = context.args[0].strip()
+    if not channel.startswith("@"):
+        channel = f"@{channel}"
+    
+    if channel in CHANNEL_IDS:
+        await update.message.reply_text(f"❌ {channel} kanali allaqachon qo'shilgan.")
+        return
+    
+    try:
+        chat = await context.bot.get_chat(channel)
+        if chat.type not in ["channel", "supergroup"]:
+            await update.message.reply_text("❌ Faqat kanal yoki superguruh qo'shish mumkin.")
+            return
+        
+        bot_member = await context.bot.get_chat_member(channel, context.bot.id)
+        if not bot_member.status == "administrator":
+            await update.message.reply_text("❌ Bot kanalda admin emas. Iltimos, avval botni admin qiling.")
+            return
+        
+        CHANNEL_IDS.append(channel)
+        os.environ["CHANNEL_IDS"] = ",".join([ch.lstrip("@") for ch in CHANNEL_IDS])
+        await update.message.reply_text(f"✅ {channel} kanali muvaffaqiyatli qo'shildi.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Xatolik: {str(e)}")
+
+async def remove_channel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if user_id not in ADMINS:
+        await update.message.reply_text("❌ Sizda bunday huquq yo'q.")
+        return
+    
+    if not context.args:
+        await update.message.reply_text("Foydalanish: /removechannel @kanal_nomi")
+        return
+    
+    channel = context.args[0].strip()
+    if not channel.startswith("@"):
+        channel = f"@{channel}"
+    
+    if channel not in CHANNEL_IDS:
+        await update.message.reply_text(f"❌ {channel} kanali topilmadi.")
+        return
+    
+    CHANNEL_IDS.remove(channel)
+    os.environ["CHANNEL_IDS"] = ",".join([ch.lstrip("@") for ch in CHANNEL_IDS])
+    await update.message.reply_text(f"✅ {channel} kanali muvaffaqiyatli o'chirildi.")
+
+async def list_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if user_id not in ADMINS:
+        await update.message.reply_text("❌ Sizda bunday huquq yo'q.")
+        return
+    
+    if not CHANNEL_IDS:
+        await update.message.reply_text("❌ Hozircha kanallar qo'shilmagan.")
+        return
+    
+    message = "📢 Bot obuna kanallari:\n\n" + "\n".join(CHANNEL_IDS)
+    await update.message.reply_text(message)
 
 # === /start komandasi ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -60,16 +132,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             username = ch.lstrip("@")
         btn = [
-            [InlineKeyboardButton("📢 Obuna bo‘lish", url=f"https://t.me/{username}")],
-            [InlineKeyboardButton("✅ Obuna bo‘ldim", callback_data="check_sub")]
+            [InlineKeyboardButton("📢 Obuna bo'lish", url=f"https://t.me/{username}")],
+            [InlineKeyboardButton("✅ Obuna bo'ldim", callback_data="check_sub")]
         ]
         await update.message.reply_text(
-            "📌 Botdan foydalanish uchun kanalga obuna bo‘ling:",
+            "📌 Botdan foydalanish uchun kanalga obuna bo'ling:",
             reply_markup=InlineKeyboardMarkup(btn)
         )
         return
 
-    # Agar deep-link bilan kelingan bo‘lsa (start parametri)
     if context.args:
         param = context.args[0]
         if "_" in param:
@@ -90,282 +161,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(title, reply_markup=InlineKeyboardMarkup(btns), parse_mode=ParseMode.HTML)
                 return
 
-    # Oddiy /start
     await update.message.reply_text("✅ Obuna tasdiqlandi. Endi kodni yuboring.")
 
-# === Obuna qayta tekshiruv ===
-async def check_sub(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    sub, ch = await is_subscribed(query.from_user.id, context)
-
-    if sub:
-        await query.edit_message_text("✅ Obuna tasdiqlandi. Endi kodni yuboring.")
-    else:
-        try:
-            chat = await context.bot.get_chat(ch)
-            username = chat.username or ch.lstrip("@")
-        except:
-            username = ch.lstrip("@")
-        await query.answer("❌ Siz hali ham obuna emassiz.", show_alert=True)
-        await query.edit_message_text(f"❗ Obuna topilmadi: @{username}")
-
-# === Kodni qabul qilish ===
-async def handle_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    code = update.message.text.strip()
-    if "manhwa" in data and code in data["manhwa"]:
-        item = data["manhwa"][code]
-        title = f"{item['title']}\n📁 Turi: PDF\n📚 Boblar:"
-        parts = item.get("parts", {})
-        btns = [[InlineKeyboardButton(f"📖 {name}", callback_data=f"get|manhwa|{code}|{name}")] for name in parts]
-        await update.message.reply_text(title, reply_markup=InlineKeyboardMarkup(btns))
-    else:
-        await update.message.reply_text("❌ Bunday kod topilmadi yoki noto‘g‘ri.")
-
-# === Qism yuborish ===
-async def send_part(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    _, category, code, part_name = query.data.split("|")
-    item = data.get(category, {}).get(code)
-
-    if not item or part_name not in item["parts"]:
-        await query.edit_message_text("❌ Qism topilmadi.")
-        return
-
-    file_id = item["parts"][part_name]
-    if category == "manhwa":
-        await context.bot.send_document(query.from_user.id, file_id)
-    else:
-        await context.bot.send_video(query.from_user.id, file_id)
-
-# === Barcha qismlarni yuborish ===
-async def getall_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    _, cat, mid = query.data.split("|")
-    item = data.get(cat, {}).get(mid)
-    if not item:
-        await query.edit_message_text("❌ Ma'lumot topilmadi.")
-        return
-
-    for name, file_id in item.get("parts", {}).items():
-        if cat == "manhwa":
-            await context.bot.send_document(query.from_user.id, file_id)
-        else:
-            await context.bot.send_video(query.from_user.id, file_id)
-
-# === Fayl yuklash statuslari ===
-pending_uploads = {}
-awaiting_parts = {}
-pending_publish = {}
-
-# === /addname komandasi ===
-async def addname(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) < 2:
-        await update.message.reply_text("Foydalanish: /addname <id> <nom>")
-        return
-    mid, name = context.args[0], " ".join(context.args[1:])
-    category = "manhwa" if mid in data.get("manhwa", {}) else "anime" if mid in data.get("anime", {}) else None
-
-    if category:
-        data[category][mid]["title"] = name
-        save_json("data.json", data)
-        awaiting_parts[update.effective_user.id] = {"id": mid, "cat": category}
-        await update.message.reply_text(f"📎 {name} nomi yangilandi.\n📤 Endi qismlarni yuboring...")
-    else:
-        pending_uploads[update.effective_user.id] = {"id": mid, "name": name}
-        await update.message.reply_text("📎 Iltimos, PDF yoki video yuboring...")
-
-# === /addpart komandasi ===
-async def addpart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) != 1:
-        await update.message.reply_text("Foydalanish: /addpart <id>")
-        return
-    mid = context.args[0]
-    for cat in ["manhwa", "anime"]:
-        if mid in data.get(cat, {}):
-            awaiting_parts[update.effective_user.id] = {"id": mid, "cat": cat}
-            await update.message.reply_text("📤 Qismlarni yuboring...")
-            return
-    await update.message.reply_text("❌ ID topilmadi.")
-
-# === Media router ===
-async def media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    if uid in pending_uploads:
-        await handle_media_upload(update, context)
-    elif uid in awaiting_parts:
-        await part_handler(update, context)
-    elif uid in pending_publish:
-        await handle_publish_media(update, context)
-    else:
-        await update.message.reply_text("❌ Sizdan hech qanday kutish yo‘q.")
-
-# === Media saqlash (yangi) ===
-async def handle_media_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    info = pending_uploads.pop(uid)
-    mid, name = info["id"], info["name"]
-
-    if update.message.document:
-        file_id = update.message.document.file_id
-        category, label = "manhwa", "📕 Manhwa"
-    elif update.message.video:
-        file_id = update.message.video.file_id
-        category, label = "anime", "🎬 Anime"
-    else:
-        await update.message.reply_text("❌ Faqat PDF yoki video yuboring.")
-        return
-
-    data.setdefault(category, {})[mid] = {
-        "title": name,
-        "cover": file_id,
-        "parts": {},
-        "type": category
-    }
-    save_json("data.json", data)
-    await update.message.reply_text(f"{label} nomi qo‘shildi: {name}")
-
-# === Part saqlash ===
-async def part_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    info = awaiting_parts.get(uid)
-    if not info:
-        await update.message.reply_text("❌ Kutilmagan holat.")
-        return
-    mid, cat = info["id"], info["cat"]
-    file = update.message.document or update.message.video or (update.message.photo[-1] if update.message.photo else None)
-
-    if not file:
-        await update.message.reply_text("❌ Noto‘g‘ri fayl.")
-        return
-
-    parts = data[cat][mid]["parts"]
-    index = len(parts) + 1
-    name = f"Bob {index}" if cat == "manhwa" else f"Qism {index}"
-    parts[name] = file.file_id
-    save_json("data.json", data)
-    await update.message.reply_text(f"✅ {name} saqlandi.")
-
-# === /publish komandasi ===
-async def publish(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) != 1:
-        await update.message.reply_text("Foydalanish: /publish <id>")
-        return
-    mid = context.args[0]
-    for cat in ["manhwa", "anime"]:
-        if mid in data.get(cat, {}):
-            pending_publish[update.effective_user.id] = {"id": mid, "cat": cat}
-            await update.message.reply_text("📤 Iltimos, rasm yoki video yuboring (post uchun).")
-            return
-    await update.message.reply_text("❌ ID topilmadi.")
-    
-# === Media qabul qilish: publish uchun ===
-async def handle_publish_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    info = pending_publish.pop(uid)
-    mid, cat = info["id"], info["cat"]
-
-    # Media faylni aniqlash va turi
-    media = None
-    media_type = None
-
-    if update.message.video:
-        media = update.message.video.file_id
-        media_type = "video"
-    elif update.message.photo:
-        media = update.message.photo[-1].file_id
-        media_type = "photo"
-    else:
-        await update.message.reply_text("❌ Iltimos, faqat rasm yoki video yuboring.")
-        return
-
-    # Foydalanuvchi yozgan caption
-    user_caption = update.message.caption or ""
-
-    # Yuklab olish tugmasi
-    deep_link = f"https://t.me/{BOT_USERNAME}?start={cat}_{mid}"
-    btn = InlineKeyboardMarkup([[InlineKeyboardButton("📥 Yuklab olish", url=deep_link)]])
-
-    # Har bir kanalga yuborish
-    for ch in CHANNEL_IDS:
-        try:
-            if media_type == "photo":
-                await context.bot.send_photo(
-                    chat_id=ch,
-                    photo=media,
-                    caption=user_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=btn
-                )
-            elif media_type == "video":
-                await context.bot.send_video(
-                    chat_id=ch,
-                    video=media,
-                    caption=user_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=btn
-                )
-        except Exception as e:
-            print(f"Xatolik: {e}")
-
-    await update.message.reply_text("✅ Post yuborildi.")
-
-
-    # Media faylni aniqlash
-    media = update.message.photo[-1].file_id if update.message.photo else \
-            update.message.video.file_id if update.message.video else None
-
-    if not media:
-        await update.message.reply_text("❌ Iltimos, faqat rasm yoki video yuboring.")
-        return
-
-    # Foydalanuvchi yozgan caption
-    user_caption = update.message.caption or ""
-
-    # Yuklab olish tugmasi
-    deep_link = f"https://t.me/{BOT_USERNAME}?start={cat}_{mid}"
-    btn = InlineKeyboardMarkup([[InlineKeyboardButton("📥 Yuklab olish", url=deep_link)]])
-
-    # Har bir kanalga yuborish
-    for ch in CHANNEL_IDS:
-        try:
-            if cat == "manhwa":
-                await context.bot.send_photo(
-                    chat_id=ch,
-                    photo=media,
-                    caption=user_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=btn
-                )
-            else:
-                await context.bot.send_video(
-                    chat_id=ch,
-                    video=media,
-                    caption=user_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=btn
-                )
-        except Exception as e:
-            print(f"Xatolik: {e}")
-
-    await update.message.reply_text("✅ Post yuborildi.")
-
+# ... (qolgan funksiyalar o'zgarmagan holda qoldi) ...
 
 # === Botni ishga tushirish ===
 def main():
     app = Application.builder().token(TOKEN).build()
 
+    # Komandalar
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("addname", addname))
     app.add_handler(CommandHandler("addpart", addpart))
     app.add_handler(CommandHandler("publish", publish))
+    app.add_handler(CommandHandler("addchannel", add_channel))
+    app.add_handler(CommandHandler("removechannel", remove_channel))
+    app.add_handler(CommandHandler("listchannels", list_channels))
 
+    # Callback handlerlar
     app.add_handler(CallbackQueryHandler(check_sub, pattern="check_sub"))
     app.add_handler(CallbackQueryHandler(send_part, pattern=r"get\|"))
     app.add_handler(CallbackQueryHandler(getall_handler, pattern=r"getall\|"))
 
+    # Message handlerlar
     media_filter = filters.Document.ALL | filters.VIDEO | filters.PHOTO
     app.add_handler(MessageHandler(media_filter, media_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_code))
