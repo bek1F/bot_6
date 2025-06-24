@@ -60,16 +60,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             username = ch.lstrip("@")
         btn = [
-            [InlineKeyboardButton("📢 Obuna bo‘lish", url=f"https://t.me/{username}")],
-            [InlineKeyboardButton("✅ Obuna bo‘ldim", callback_data="check_sub")]
+            [InlineKeyboardButton("📢 Obuna bo'lish", url=f"https://t.me/{username}")],
+            [InlineKeyboardButton("✅ Obuna bo'ldim", callback_data="check_sub")]
         ]
         await update.message.reply_text(
-            "📌 Botdan foydalanish uchun kanalga obuna bo‘ling:",
+            "📌 Botdan foydalanish uchun kanalga obuna bo'ling:",
             reply_markup=InlineKeyboardMarkup(btn)
         )
         return
 
-    # Agar deep-link bilan kelingan bo‘lsa (start parametri)
+    # Agar deep-link bilan kelingan bo'lsa (start parametri)
     if context.args:
         param = context.args[0]
         if "_" in param:
@@ -120,7 +120,7 @@ async def handle_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
         btns = [[InlineKeyboardButton(f"📖 {name}", callback_data=f"get|manhwa|{code}|{name}")] for name in parts]
         await update.message.reply_text(title, reply_markup=InlineKeyboardMarkup(btns))
     else:
-        await update.message.reply_text("❌ Bunday kod topilmadi yoki noto‘g‘ri.")
+        await update.message.reply_text("❌ Bunday kod topilmadi yoki noto'g'ri.")
 
 # === Qism yuborish ===
 async def send_part(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -200,7 +200,7 @@ async def media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif uid in pending_publish:
         await handle_publish_media(update, context)
     else:
-        await update.message.reply_text("❌ Sizdan hech qanday kutish yo‘q.")
+        await update.message.reply_text("❌ Sizdan hech qanday kutish yo'q.")
 
 # === Media saqlash (yangi) ===
 async def handle_media_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -225,7 +225,7 @@ async def handle_media_upload(update: Update, context: ContextTypes.DEFAULT_TYPE
         "type": category
     }
     save_json("data.json", data)
-    await update.message.reply_text(f"{label} nomi qo‘shildi: {name}")
+    await update.message.reply_text(f"{label} nomi qo'shildi: {name}")
 
 # === Part saqlash ===
 async def part_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -238,7 +238,7 @@ async def part_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file = update.message.document or update.message.video or (update.message.photo[-1] if update.message.photo else None)
 
     if not file:
-        await update.message.reply_text("❌ Noto‘g‘ri fayl.")
+        await update.message.reply_text("❌ Noto'g'ri fayl.")
         return
 
     parts = data[cat][mid]["parts"]
@@ -312,50 +312,13 @@ async def handle_publish_media(update: Update, context: ContextTypes.DEFAULT_TYP
 
     await update.message.reply_text("✅ Post yuborildi.")
 
-
-    # Media faylni aniqlash
-    media = update.message.photo[-1].file_id if update.message.photo else \
-            update.message.video.file_id if update.message.video else None
-
-    if not media:
-        await update.message.reply_text("❌ Iltimos, faqat rasm yoki video yuboring.")
-        return
-
-    # Foydalanuvchi yozgan caption
-    user_caption = update.message.caption or ""
-
-    # Yuklab olish tugmasi
-    deep_link = f"https://t.me/{BOT_USERNAME}?start={cat}_{mid}"
-    btn = InlineKeyboardMarkup([[InlineKeyboardButton("📥 Yuklab olish", url=deep_link)]])
-
-    # Har bir kanalga yuborish
-    for ch in CHANNEL_IDS:
-        try:
-            if cat == "manhwa":
-                await context.bot.send_photo(
-                    chat_id=ch,
-                    photo=media,
-                    caption=user_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=btn
-                )
-            else:
-                await context.bot.send_video(
-                    chat_id=ch,
-                    video=media,
-                    caption=user_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=btn
-                )
-        except Exception as e:
-            print(f"Xatolik: {e}")
-
-    await update.message.reply_text("✅ Post yuborildi.")
-
-
 # === Botni ishga tushirish ===
 def main():
     app = Application.builder().token(TOKEN).build()
+    
+    # Workaround for Python 3.13 compatibility
+    if hasattr(app.updater, '_Updater__polling_cleanup_cb'):
+        app.updater._Updater__polling_cleanup_cb = None
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("addname", addname))
