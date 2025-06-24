@@ -1,1 +1,24 @@
-{}
+{
+  "manhwa": {
+    "1": {
+      "title": "Agar tez orada olmasam rostakamiga yengilmas bolib ketaman!",
+      "cover": "BQACAgIAAxkBAANpaFA3FQs0AUl7i4CXcZfEramssi8AAstyAAKH9fBJnML8mE9KFvI2BA",
+      "parts": {
+        "Bob 1": "BQACAgIAAxkBAANpaFA3FQs0AUl7i4CXcZfEramssi8AAstyAAKH9fBJnML8mE9KFvI2BA",
+        "Bob 2": "BQACAgIAAxkBAANtaFA3VQg6IImczD2zRX3Dl-BHPVQAAt50AAKlB_lJAAEo7r-LOnZzNgQ",
+        "Bob 3": "BQACAgIAAxkBAAN4aFA7d9G7c5wvpmHYwquqD_x3sBwAAtB9AAJem_hJ6b0Tqan9CNY2BA",
+        "Bob 4": "BQACAgIAAxkBAANyaFA3u4U8LHNS0zJih0fqn_YI94cAAtptAALuMAABStYUrCTrjdWrNgQ",
+        "Bob 5": "BQACAgIAAxkBAAOIaFA9H9zwn_uLnMka0_IsD_YUTwcAAplsAALuMAhKxMSVtJijWZU2BA",
+        "Bob 6": "BQACAgIAAxkBAAOMaFA9RlwtWJJV76XPZbF920OL5K0AAvN8AAKsmxFKCS4UINQGdTY2BA",
+        "Bob 7": "BQACAgIAAxkBAAOQaFA9XDtgjXItvO-56YYQo9nuSg8AAod4AAKY8UBKKNZaXgX4F1s2BA",
+        "Bob 8": "BQACAgIAAxkBAAOUaFA9cgP4tIJL813g482Zo2RPFaQAAq16AALbF1BKrqe4LyF6Boc2BA",
+        "Bob 9": "BQACAgIAAxkBAAOYaFA9kLzgaYiMo0jBpt2rjfZSy-MAAp93AAIV2GhK_uOUU-Y1eJg2BA",
+        "Bob 10": "BQACAgIAAxkBAAOcaFA9qdyp3AABV27_EdUK8vXk2P9wAAJLbwACYXNxSqLdIreHuyGhNgQ",
+        "Bob 11": "BQACAgIAAxkBAAOgaFA90cERvw9z7UEsxicQn4rwF3AAAn5xAAJhc3lK0P8q_pDz-3Q2BA",
+        "Bob 12": "BQACAgIAAxkBAAIBNGhZlehWyTN_VRS14dtT0zVLNhjuAAIhewACxduBSgbz6ltSghoTNgQ",
+        "Bob 13": "BQACAgIAAxkBAAIBNWhZlehbPb2iaTZIKnT3mpdhh-8AA7VyAALVK7FK5vc6IlJPq5w2BA"
+      },
+      "type": "manhwa"
+    }
+  }
+}
