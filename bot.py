@@ -260,13 +260,60 @@ async def publish(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("📤 Iltimos, rasm yoki video yuboring (post uchun).")
             return
     await update.message.reply_text("❌ ID topilmadi.")
-
+    
 # === Media qabul qilish: publish uchun ===
 async def handle_publish_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     info = pending_publish.pop(uid)
     mid, cat = info["id"], info["cat"]
-    item = data[cat][mid]
+
+    # Media faylni aniqlash va turi
+    media = None
+    media_type = None
+
+    if update.message.video:
+        media = update.message.video.file_id
+        media_type = "video"
+    elif update.message.photo:
+        media = update.message.photo[-1].file_id
+        media_type = "photo"
+    else:
+        await update.message.reply_text("❌ Iltimos, faqat rasm yoki video yuboring.")
+        return
+
+    # Foydalanuvchi yozgan caption
+    user_caption = update.message.caption or ""
+
+    # Yuklab olish tugmasi
+    deep_link = f"https://t.me/{BOT_USERNAME}?start={cat}_{mid}"
+    btn = InlineKeyboardMarkup([[InlineKeyboardButton("📥 Yuklab olish", url=deep_link)]])
+
+    # Har bir kanalga yuborish
+    for ch in CHANNEL_IDS:
+        try:
+            if media_type == "photo":
+                await context.bot.send_photo(
+                    chat_id=ch,
+                    photo=media,
+                    caption=user_caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=btn
+                )
+            elif media_type == "video":
+                await context.bot.send_video(
+                    chat_id=ch,
+                    video=media,
+                    caption=user_caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=btn
+                )
+        except Exception as e:
+            print(f"Xatolik: {e}")
+
+    await update.message.reply_text("✅ Post yuborildi.")
+
+
+    # Media faylni aniqlash
     media = update.message.photo[-1].file_id if update.message.photo else \
             update.message.video.file_id if update.message.video else None
 
@@ -274,26 +321,37 @@ async def handle_publish_media(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text("❌ Iltimos, faqat rasm yoki video yuboring.")
         return
 
-    title = item["title"]
-    type_text = "PDF" if cat == "manhwa" else "Video"
-    part_count = len(item["parts"])
-    caption = (
-        f"<b>📌 Nomi:</b> {title}\n"
-        f"<b>📁 Turi:</b> {type_text}\n"
-        f"<b>📚 Qismlar:</b> {part_count} ta"
-    )
+    # Foydalanuvchi yozgan caption
+    user_caption = update.message.caption or ""
+
+    # Yuklab olish tugmasi
     deep_link = f"https://t.me/{BOT_USERNAME}?start={cat}_{mid}"
     btn = InlineKeyboardMarkup([[InlineKeyboardButton("📥 Yuklab olish", url=deep_link)]])
 
+    # Har bir kanalga yuborish
     for ch in CHANNEL_IDS:
         try:
             if cat == "manhwa":
-                await context.bot.send_photo(ch, media, caption=caption, parse_mode=ParseMode.HTML, reply_markup=btn)
+                await context.bot.send_photo(
+                    chat_id=ch,
+                    photo=media,
+                    caption=user_caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=btn
+                )
             else:
-                await context.bot.send_video(ch, media, caption=caption, parse_mode=ParseMode.HTML, reply_markup=btn)
+                await context.bot.send_video(
+                    chat_id=ch,
+                    video=media,
+                    caption=user_caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=btn
+                )
         except Exception as e:
             print(f"Xatolik: {e}")
+
     await update.message.reply_text("✅ Post yuborildi.")
+
 
 # === Botni ishga tushirish ===
 def main():

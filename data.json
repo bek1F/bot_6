@@ -16,7 +16,40 @@
         "Bob 10": "BQACAgIAAxkBAAOcaFA9qdyp3AABV27_EdUK8vXk2P9wAAJLbwACYXNxSqLdIreHuyGhNgQ",
         "Bob 11": "BQACAgIAAxkBAAOgaFA90cERvw9z7UEsxicQn4rwF3AAAn5xAAJhc3lK0P8q_pDz-3Q2BA",
         "Bob 12": "BQACAgIAAxkBAAIBNGhZlehWyTN_VRS14dtT0zVLNhjuAAIhewACxduBSgbz6ltSghoTNgQ",
-        "Bob 13": "BQACAgIAAxkBAAIBNWhZlehbPb2iaTZIKnT3mpdhh-8AA7VyAALVK7FK5vc6IlJPq5w2BA"
+        "Bob 13": "BQACAgIAAxkBAAIBNWhZlehbPb2iaTZIKnT3mpdhh-8AA7VyAALVK7FK5vc6IlJPq5w2BA",
+        "Bob 14": "BQACAgIAAxkBAAIBpWhaJsGs4mcSVYBCRjciVSAhm_-LAALFegAC9z_QSl9F_Ys3BbZbNgQ"
+      },
+      "type": "manhwa"
+    }
+  },
+  "anime": {
+    "2": {
+      "title": "Sehrli imperator",
+      "cover": "BAACAgUAAxkBAAIB6Whadl6XNrNp6n_fiUMAAc4y7qFf2wACRRYAAtBe0VZB8GKbX3vXUTYE",
+      "parts": {
+        "Qism 1": "BQACAgIAAxkBAAIB4WhadbO1YPgAAdBaA5ibaAwpRWCsEAACn3YAAmDKuUoqTSDJUKM6LTYE",
+        "Qism 2": "BQACAgIAAxkBAAIB7mhadpijRxdfWxcJU8NREVGKmGvGAAJJggACksW5SjtXIIaeL-rLNgQ",
+        "Qism 3": "BQACAgIAAxkBAAIB72hadpj-rm9CrYIIy_HyhUXwBbSqAAJZgwACksXBSuaS3x-yhQKWNgQ",
+        "Qism 4": "BQACAgIAAxkBAAIB8GhadpjD5oJyOuZh7xk5lLOHzpN0AAL-gQACksXBSnRoQ4Rnh1TTNgQ",
+        "Qism 5": "BQACAgIAAxkBAAIB8WhadphbC4jaDB_hXVi7M4DyAu5OAALhdwACCMXBShKcvwEslCDNNgQ",
+        "Qism 6": "BQACAgIAAxkBAAIB8mhadpiS0cXnZwpy7Xf1MtpQA5DwAAJphAAC9z_QShROLtOwVdzKNgQ"
+      },
+      "type": "manhwa"
+    },
+    "3": {
+      "title": "“Tyrant of the Tower Defense Game” Mudofa o'yinining zolimi.",
+      "cover": "BAACAgIAAxkBAAICB2haeDc9Vlhg8gtU-C5buC8TMGT5AALgdwAC9uyRSisTMNHfDZMvNgQ",
+      "parts": {
+        "Qism 1": "BQACAgIAAxkBAAICC2haeH1q-IPioFJH-FVqlZ2CoXBEAAKXcwACuj8ZSfecucK-2UDgNgQ",
+        "Qism 2": "BQACAgIAAxkBAAICDGhaeH1-Jw_2PZPaE3WR5EU9H_a5AAL7awACCgg5SQg9e7oUzQSnNgQ",
+        "Qism 3": "BQACAgIAAxkBAAICDWhaeH0g40sZ-4PaPoZcezBYvYQ-AAIYawACJOtYSYKImVyWzGA2NgQ",
+        "Qism 4": "BQACAgIAAxkBAAICDmhaeH2FVL388lyBuly2ia40kKAkAALGcAACwFVISaAx8DfG3CCfNgQ",
+        "Qism 5": "BQACAgIAAxkBAAICD2haeH2QpICawjlNiqn-uFZ0mdXpAAIyaAACUdhQSUDIUDqsHVukNgQ",
+        "Qism 6": "BQACAgIAAxkBAAICEGhaeH2btVhqKIJdYGljT1uGQGW3AAJWdAACwPLQSZgfLzJzFPw7NgQ",
+        "Qism 7": "BQACAgIAAxkBAAICEWhaeH1c9L9N4tRBRrxS0R6-uTn-AAKLdAACwPLYSSLL7s2FB_X5NgQ",
+        "Qism 8": "BQACAgIAAxkBAAICEmhaeH18WqZ5WawsgcDpCBFTJ0bAAALwdQAC0U8YSisMq3P0aTwSNgQ",
+        "Qism 9": "BQACAgIAAxkBAAICE2haeH3dQMYiT3fsqt9rd4oUBoQQAAKacAACM9wgSqIRpvFfk2P1NgQ",
+        "Qism 10": "BQACAgIAAxkBAAICFGhaeH1E1M03bvC4f8ZaIpeW-5_HAALscgAC9z_ISmyc_1wF19AINgQ"
       },
       "type": "manhwa"
     }
